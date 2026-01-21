@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SST & COPASST Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hidden { display: none !important; }
+        .pdf-container { font-family: Arial, sans-serif; padding: 20px; background: white; }
+        
+        /* COLOR CORPORATIVO PERSONALIZADO */
+        .bg-corp { background-color: #06263b; }
+        .text-corp { color: #06263b; }
+        .border-corp { border-color: #06263b; }
+        .hover-corp:hover { background-color: #093452; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- NAV (BARRA SUPERIOR) -->
+    <nav class="bg-corp text-white shadow-lg sticky top-0 z-40 border-b-4 border-yellow-500">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-3">
+                <!-- AQUÍ VA TU LOGO -->
+                <!-- Reemplaza el src con la URL de tu logo -->
+                <img src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/WhatsApp%20Image%202025-10-17%20at%209.06.45%20AM.jpeg" alt="Logo Empresa" class="h-12 bg-white rounded p-1">
+                
+                <div class="hidden md:block">
+                    <h1 class="text-xl font-bold leading-none tracking-wide">PORTAL SST</h1>
+                    <span class="text-xs text-gray-300">Sistema de Gestión Integrado</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-2 sm:mt-0">
+                <button onclick="navTo('public')" class="px-4 py-2 rounded hover:bg-white hover:text-[#06263b] transition text-sm font-medium border border-transparent hover:border-white">Vista Pública</button>
+                <button onclick="checkLogin()" class="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-[#06263b] text-sm font-bold shadow-md transition">Acceso COPASST</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- VISTA PÚBLICA -->
+    <main id="view-public" class="container mx-auto px-4 py-6 flex-grow fade-in">
+        
+        <!-- SECCIÓN DE BIENVENIDA (VIDEOS DE PRESENTACIÓN) -->
+        <section class="mb-10">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-corp">Bienvenidos a la Cultura de Seguridad</h2>
+                <p class="text-gray-600">Conoce nuestros pilares de prevención</p>
+            </div>
+            
+            <!-- GRID DE 4 VIDEOS -->
+            <!-- Nota: Sube tus videos y pon la ruta correcta en src="" -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-[#06263b]">
+                    <video controls class="w-full h-40 object-cover">
+                        <source src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/bienvenida.mp4" type="video/mp4">
+                        Tu navegador no soporta video.
+                    </video>
+                    <div class="bg-corp text-white text-center text-xs py-1">Bienvenidos</div>
+                </div>
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-[#06263b]">
+                    <video controls class="w-full h-40 object-cover">
+                        <source src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/invitacion.mp4" type="video/mp4">
+                    </video>
+                    <div class="bg-corp text-white text-center text-xs py-1">Invitación a Reportar</div>
+                </div>
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-[#06263b]">
+                    <video controls class="w-full h-40 object-cover">
+                        <source src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/vehiculo.mp4" type="video/mp4">
+                    </video>
+                    <div class="bg-corp text-white text-center text-xs py-1">Nuestros Vehiculos</div>
+                </div>
+                <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-[#06263b]">
+                    <video controls class="w-full h-40 object-cover">
+                        <source src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/capacitacion.mp4" type="video/mp4">
+                    </video>
+                    <div class="bg-corp text-white text-center text-xs py-1">Capacitate</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buscador -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8 border-l-8 border-corp flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div>
+                <h3 class="font-bold text-corp text-lg">Seguimiento de Reportes</h3>
+                <p class="text-sm text-gray-500">Consulta el estado de tu caso con el código asignado.</p>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+                <input type="text" id="search-code" placeholder="Ej: LOC-A1234" class="border-2 border-gray-300 rounded px-3 py-2 uppercase w-full focus:border-[#06263b] outline-none">
+                <button onclick="searchCase()" class="bg-corp text-white px-4 rounded hover-corp transition shadow"><i class="ph ph-magnifying-glass text-xl"></i></button>
+            </div>
+        </div>
+        <div id="search-result" class="mb-8 hidden"></div>
+
+        <!-- Botones Menú Principal -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+            <button onclick="showPublicSection('report')" class="bg-white p-6 rounded-xl shadow hover:shadow-2xl transition border-t-8 border-yellow-400 group transform hover:-translate-y-1">
+                <div class="bg-yellow-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-3 group-hover:bg-yellow-100 transition">
+                    <i class="ph ph-warning text-5xl text-yellow-500"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Reportar Condición</h3>
+                <p class="text-xs text-gray-500 mt-1">Locativo, Riesgos, Infraestructura</p>
+            </button>
+
+            <button onclick="showPublicSection('driver')" class="bg-white p-6 rounded-xl shadow hover:shadow-2xl transition border-t-8 border-orange-500 group transform hover:-translate-y-1">
+                <div class="bg-orange-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-3 group-hover:bg-orange-100 transition">
+                    <i class="ph ph-steering-wheel text-5xl text-orange-500"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Canal Conductores</h3>
+                <p class="text-xs text-gray-500 mt-1">Novedades mecánicas y de ruta</p>
+            </button>
+
+            <button onclick="showPublicSection('training')" class="bg-white p-6 rounded-xl shadow hover:shadow-2xl transition border-t-8 border-green-500 group transform hover:-translate-y-1">
+                <div class="bg-green-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-3 group-hover:bg-green-100 transition">
+                    <i class="ph ph-student text-5xl text-green-500"></i>
+                </div>
+                <h3 class="font-bold text-xl text-gray-800">Capacitaciones SST</h3>
+                <p class="text-xs text-gray-500 mt-1">Videos educativos y lecciones</p>
+            </button>
+        </div>
+
+        <!-- Formularios Públicos (Contenedor Dinámico) -->
+        <div id="public-forms-container" class="max-w-4xl mx-auto">
+            
+            <!-- Form Reporte Locativo -->
+            <form id="form-report" class="hidden bg-white p-8 rounded-lg shadow-xl border-t-4 border-yellow-500 fade-in" onsubmit="submitReport(event, 'locativa')">
+                <h2 class="text-2xl font-bold mb-6 text-corp flex items-center gap-2">
+                    <i class="ph ph-warning-circle text-yellow-500"></i> Reporte de Condición Insegura
+                </h2>
+                <div class="mb-4">
+                    <label class="block text-sm font-bold mb-2 text-gray-700">Sede / Ubicación</label>
+                    <select required id="loc-report" class="w-full border p-3 rounded bg-gray-50 locations-select focus:ring-2 focus:ring-[#06263b] outline-none"></select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold mb-2 text-gray-700">Descripción del Hallazgo</label>
+                    <textarea required class="w-full border p-3 rounded bg-gray-50 focus:ring-2 focus:ring-[#06263b] outline-none" rows="4" placeholder="Describa la condición insegura..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-corp text-white font-bold py-3 rounded hover-corp transition shadow-lg">ENVIAR REPORTE</button>
+            </form>
+
+            <!-- Form Conductores -->
+            <form id="form-driver" class="hidden bg-white p-8 rounded-lg shadow-xl border-t-4 border-orange-500 fade-in" onsubmit="submitReport(event, 'conductor')">
+                <h2 class="text-2xl font-bold mb-6 text-corp flex items-center gap-2">
+                    <i class="ph ph-truck text-orange-500"></i> Reporte de Conductores
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-gray-700">Placa Vehículo</label>
+                        <input type="text" required class="w-full border p-3 rounded bg-gray-50 uppercase focus:ring-2 focus:ring-orange-500 outline-none" placeholder="ABC-123">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-2 text-gray-700">Prioridad</label>
+                        <select id="driver-priority" class="w-full border p-3 rounded bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none">
+                            <option value="Baja">Baja</option>
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta (Inmoviliza)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold mb-2 text-gray-700">Novedad / Falla</label>
+                    <textarea required class="w-full border p-3 rounded bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none" rows="4" placeholder="Descripción detallada de la falla..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-orange-600 text-white font-bold py-3 rounded hover:bg-orange-700 transition shadow-lg">REPORTAR NOVEDAD</button>
+            </form>
+
+            <!-- Galería Capacitaciones -->
+            <div id="sec-training" class="hidden fade-in">
+                <h2 class="text-2xl font-bold text-center mb-6 text-corp">Material de Formación</h2>
+                <div id="training-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- JS carga esto -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- VISTA ADMINISTRADOR -->
+    <main id="view-admin" class="container mx-auto px-4 py-6 hidden flex-grow fade-in bg-gray-100">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-corp">Gestión COPASST</h2>
+            <div class="flex gap-2">
+                <button onclick="openTrainingManager()" class="bg-teal-600 text-white px-4 py-2 rounded shadow hover:bg-teal-700 text-sm flex items-center gap-2">
+                    <i class="ph ph-upload"></i> Subir Capacitación
+                </button>
+                <button onclick="openInspectionModal()" class="bg-corp text-white px-4 py-2 rounded shadow hover-corp text-sm flex items-center gap-2">
+                    <i class="ph ph-clipboard-text"></i> Nueva Inspección
+                </button>
+                <button onclick="logout()" class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm">Salir</button>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-4 rounded shadow border-t-4 border-yellow-400 h-64">
+                <h4 class="font-bold text-gray-500 text-sm mb-2">Reportes por Tipo</h4>
+                <canvas id="chartType"></canvas>
+            </div>
+            <div class="bg-white p-4 rounded shadow border-t-4 border-green-500 h-64">
+                <h4 class="font-bold text-gray-500 text-sm mb-2">Estado de Gestión</h4>
+                <canvas id="chartStatus"></canvas>
+            </div>
+            <div class="bg-white p-4 rounded shadow border-t-4 border-corp flex flex-col justify-center items-center">
+                <h4 class="font-bold text-gray-500 text-sm">Inspecciones Realizadas</h4>
+                <span id="total-inspections" class="text-5xl font-bold text-corp my-2">0</span>
+                <span class="text-sm text-gray-400">Total acumulado</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Tabla Reportes -->
+            <div class="bg-white rounded shadow overflow-hidden">
+                <div class="p-4 border-b bg-gray-50 font-bold text-corp">Bandeja de Casos (Reportes)</div>
+                <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 uppercase sticky top-0">
+                            <tr>
+                                <th class="p-3">Código</th>
+                                <th class="p-3">Detalle</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tabla Inspecciones -->
+            <div class="bg-white rounded shadow overflow-hidden">
+                <div class="p-4 border-b bg-gray-50 font-bold text-corp">Historial de Inspecciones</div>
+                <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-[#e6f0f7] text-corp uppercase sticky top-0">
+                            <tr>
+                                <th class="p-3">Código</th>
+                                <th class="p-3">Sede / Tipo</th>
+                                <th class="p-3">Fecha</th>
+                                <th class="p-3">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inspections-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL LOGIN -->
+    <div id="modal-login" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg w-80 shadow-2xl border-t-4 border-corp">
+            <h3 class="font-bold text-xl mb-6 text-center text-corp">Acceso COPASST</h3>
+            <input type="email" id="login-user" placeholder="Correo Corporativo" class="w-full border p-3 mb-3 rounded outline-none focus:border-[#06263b]">
+            <input type="password" id="login-pass" placeholder="Contraseña" class="w-full border p-3 mb-6 rounded outline-none focus:border-[#06263b]">
+            <button onclick="performLogin()" class="w-full bg-corp text-white py-2 rounded font-bold hover-corp">INGRESAR</button>
+            <button onclick="document.getElementById('modal-login').classList.add('hidden')" class="w-full mt-3 text-gray-400 text-sm hover:text-gray-600">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO DE VISTA (CAPACITACIONES) -->
+    <div id="modal-training-auth" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded w-96 shadow-2xl">
+            <h3 class="font-bold text-lg mb-2 text-center text-corp">Registro de Asistencia</h3>
+            <p class="text-xs text-gray-500 mb-4 text-center">Para acceder al contenido debes registrar tu visita.</p>
+            <input type="hidden" id="training-target-id">
+            <input type="hidden" id="training-target-url">
+            <input type="text" id="trainee-name" placeholder="Nombre y Apellidos" class="w-full border p-2 mb-2 rounded">
+            <input type="number" id="trainee-id" placeholder="Cédula" class="w-full border p-2 mb-4 rounded">
+            <button onclick="saveTrainingLog()" class="w-full bg-green-600 text-white py-2 rounded font-bold hover:bg-green-700">Acceder al Material</button>
+            <button onclick="document.getElementById('modal-training-auth').classList.add('hidden')" class="w-full mt-2 text-gray-500 text-sm">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIÓN CASO -->
+    <div id="modal-manage" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded w-full max-w-lg shadow-2xl">
+            <h3 class="font-bold text-lg mb-4 text-corp border-b pb-2">Gestionar Caso: <span id="manage-code"></span></h3>
+            <p class="text-xs text-gray-500">Descripción:</p>
+            <p id="manage-desc" class="text-sm text-gray-800 mb-4 bg-gray-50 p-2 rounded border"></p>
+            
+            <label class="block text-sm font-bold mt-2">Compromisos / Solución</label>
+            <textarea id="manage-commitments" class="w-full border p-2 rounded" rows="3" placeholder="Acciones realizadas..."></textarea>
+
+            <label class="block text-sm font-bold mt-2">Estado Actual</label>
+            <select id="manage-status" class="w-full border p-2 rounded mb-4">
+                <option value="Abierto">Abierto</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Cerrado">Cerrado (Finalizado)</option>
+            </select>
+
+            <div class="flex gap-2">
+                <button onclick="saveCaseManagement()" class="flex-1 bg-green-600 text-white py-2 rounded font-bold">Guardar</button>
+                <button onclick="document.getElementById('modal-manage').classList.add('hidden')" class="flex-1 border py-2 rounded hover:bg-gray-100">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVA INSPECCIÓN -->
+    <div id="modal-inspection" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg w-full max-w-5xl p-6 m-4 h-[95vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-corp">Nueva Inspección COPASST</h3>
+                <button onclick="document.getElementById('modal-inspection').classList.add('hidden')" class="text-2xl text-gray-500 hover:text-red-500">&times;</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-500">Sede</label>
+                    <select id="insp-sede" class="w-full border p-2 rounded locations-select bg-gray-50"></select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-500">Tipo de Inspección</label>
+                    <select id="insp-tipo" class="w-full border p-2 rounded bg-blue-50 font-bold text-corp" onchange="updateChecklistUI()">
+                        <option value="locativa">Locativa (Infraestructura)</option>
+                        <option value="5s">Orden y Aseo (Metodología 5S)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs font-bold uppercase text-gray-500">Responsable</label>
+                    <input type="text" id="insp-responsable" class="w-full border p-2 rounded bg-gray-50">
+                </div>
+            </div>
+
+            <!-- Header de Tabla -->
+            <div class="flex bg-corp text-white p-2 font-bold text-sm rounded-t">
+                <div class="w-1/2">Aspecto a Evaluar</div>
+                <div class="w-1/6 text-center">Estado</div>
+                <div class="w-1/3">Hallazgos / Observaciones</div>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="overflow-y-auto flex-grow border border-gray-200 rounded-b p-2 bg-gray-50" id="checklist-container">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <div class="mt-4 pt-2 border-t flex justify-end">
+                <button onclick="submitInspection()" class="bg-corp text-white px-6 py-2 rounded font-bold hover-corp shadow">Guardar Inspección</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VER INSPECCIÓN (PARA PDF) -->
+    <div id="modal-view-insp" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
+        <div class="bg-white w-full max-w-4xl h-[90vh] overflow-y-auto m-4 p-8 relative shadow-2xl">
+            <button onclick="document.getElementById('modal-view-insp').classList.add('hidden')" class="absolute top-4 right-4 text-3xl text-red-500 font-bold">&times;</button>
+            
+            <!-- Contenido Imprimible -->
+            <div id="printable-area" class="pdf-container">
+                <div class="flex justify-between items-center border-b-4 border-[#06263b] pb-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <!-- Logo en reporte -->
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-center text-gray-500">LOGO</div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-corp">Reporte de Inspección</h1>
+                            <p class="text-sm text-gray-500">Sistema de Gestión SST</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-xl text-corp" id="view-code">INS-XXX</p>
+                        <p class="text-sm" id="view-date">DD/MM/AAAA</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded border-l-4 border-[#06263b]">
+                    <div><p class="text-xs text-gray-500 uppercase">Sede</p><p class="font-bold text-lg" id="view-sede">-</p></div>
+                    <div><p class="text-xs text-gray-500 uppercase">Tipo</p><p class="font-bold text-lg" id="view-type">-</p></div>
+                    <div><p class="text-xs text-gray-500 uppercase">Responsable</p><p class="font-bold text-lg" id="view-resp">-</p></div>
+                </div>
+
+                <h3 class="font-bold text-lg mb-2 border-b text-corp">Hallazgos y No Conformidades</h3>
+                <table class="w-full text-sm border-collapse mb-6">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="border p-2 text-left">Item Evaluado</th>
+                            <th class="border p-2 text-center w-24">Estado</th>
+                            <th class="border p-2 text-left">Observación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="view-findings-body"></tbody>
+                </table>
+            </div>
+            
+            <div class="fixed bottom-10 right-10 flex gap-2">
+                <button onclick="downloadInspectionPDF()" class="bg-red-600 text-white px-6 py-3 rounded-full shadow-lg font-bold flex items-center gap-2 hover:scale-105 transition">
+                    <i class="ph ph-file-pdf text-xl"></i> Descargar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUBIR CAPACITACIÓN -->
+    <div id="modal-upload-training" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded w-96 shadow-xl">
+            <h3 class="font-bold text-lg mb-4 text-corp">Nueva Capacitación</h3>
+            <div class="space-y-3">
+                <input type="text" id="new-train-title" placeholder="Título del Video/PDF" class="w-full border p-2 rounded">
+                <input type="text" id="new-train-desc" placeholder="Descripción corta" class="w-full border p-2 rounded">
+                <select id="new-train-type" class="w-full border p-2 rounded">
+                    <option value="video">Video (Reel/YouTube)</option>
+                    <option value="pdf">Documento PDF</option>
+                </select>
+                <input type="text" id="new-train-url" placeholder="Link (URL)" class="w-full border p-2 rounded">
+                <input type="text" id="new-train-img" placeholder="Link Imagen Portada (Opcional)" class="w-full border p-2 rounded">
+            </div>
+            <div class="mt-4 flex gap-2">
+                <button onclick="saveTraining()" class="flex-1 bg-corp text-white py-2 rounded font-bold hover-corp">Publicar</button>
+                <button onclick="document.getElementById('modal-upload-training').classList.add('hidden')" class="flex-1 border py-2 rounded">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // ==========================================
+        // 1. CREDENCIALES (PON LAS TUYAS AQUÍ)
+        // ==========================================
+        const SUPABASE_URL = 'https://ogjrlqylxnmsjxynnxop.supabase.co'; // <--- TUS DATOS AQUÍ
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanJscXlseG5tc2p4eW5ueG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzI1MDEsImV4cCI6MjA3OTU0ODUwMX0.5aV8eED_fau9KJIsumYyEliSn5_c5W8mSvvIOjXNve0';               // <--- TUS DATOS AQUÍ
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ==========================================
+        // 2. DATOS MAESTROS
+        // ==========================================
+        const sedesList = [
+            "Medellin Norte", "Medellin Sur", "Exposiciones", "Abejorral", "La Union", 
+            "Rionegro", "Taquillas La Ceja", "Rodamiento/encomiendas", "Operaciones/CIS",
+            "Datos y desarrollo/CIS", "Gestión Humana-Recepción/CIS", "Contabilidad-Tesoreria,CIS",
+            "Estacion de servicio", "Sala de Conductores", "Servicentro", "Lavadero"
+        ];
+
+        const checklistLocativa = [
+            "Estado de pisos y niveles", "Estado de paredes y techos", "Ventanas y vidrios",
+            "Iluminación (Lámparas/Bombillos)", "Estado de escaleras y rampas", "Cableado eléctrico organizado",
+            "Estado de tomacorrientes", "Señalización de evacuación", "Extintores accesibles y vigentes",
+            "Botiquín dotado", "Estado del mobiliario (Sillas/Mesas)", "Ventilación del área"
+        ];
+
+        // Metodología 5S
+        const checklist5S = [
+            "1. SEIRI (Clasificar): ¿Solo hay elementos necesarios en el área?",
+            "1. SEIRI: ¿Se han eliminado objetos obsoletos o dañados?",
+            "2. SEITON (Ordenar): ¿Cada cosa tiene un lugar definido y marcado?",
+            "2. SEITON: ¿Los pasillos y salidas están libres de obstáculos?",
+            "3. SEISO (Limpiar): ¿El área se encuentra libre de polvo y basura?",
+            "3. SEISO: ¿Se usan correctamente los puntos ecológicos?",
+            "4. SEIKETSU (Estandarizar): ¿Existen avisos o señales claras de orden?",
+            "4. SEIKETSU: ¿El personal usa su EPP correctamente?",
+            "5. SHITSUKE (Disciplina): ¿Se respeta el cronograma de aseo?",
+            "5. SHITSUKE: ¿El personal mantiene el orden sin que se le diga?"
+        ];
+
+        // ==========================================
+        // 3. INICIO Y CARGA
+        // ==========================================
+        window.onload = () => {
+            // Llenar selects
+            const selects = document.querySelectorAll('.locations-select');
+            selects.forEach(sel => {
+                sel.innerHTML = '<option value="">Seleccione Sede...</option>' + 
+                    sedesList.map(s => `<option value="${s}">${s}</option>`).join('');
+            });
+            updateChecklistUI(); // Cargar checklist inicial
+            loadTrainings();
+        };
+
+        function navTo(view) {
+            document.getElementById('view-public').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+            document.getElementById('view-' + view).classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 4. LÓGICA PÚBLICA (REPORTES Y VIDEOS)
+        // ==========================================
+        function showPublicSection(sec) {
+            document.getElementById('form-report').classList.add('hidden');
+            document.getElementById('form-driver').classList.add('hidden');
+            document.getElementById('sec-training').classList.add('hidden');
+            if(sec === 'report') document.getElementById('form-report').classList.remove('hidden');
+            if(sec === 'driver') document.getElementById('form-driver').classList.remove('hidden');
+            if(sec === 'training') document.getElementById('sec-training').classList.remove('hidden');
+        }
+
+        function generateCode(prefix) {
+            const n = Math.floor(1000 + Math.random() * 9000);
+            const l = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+            return `${prefix}-${l}${n}`;
+        }
+
+        async function submitReport(e, type) {
+            e.preventDefault();
+            const form = e.target;
+            const code = generateCode(type === 'locativa' ? 'LOC' : 'VEH');
+            
+            let data = { codigo: code, tipo_reporte: type, estado: 'Abierto' };
+
+            if(type === 'locativa') {
+                data.ubicacion_placa = document.getElementById('loc-report').value;
+                data.descripcion = form.querySelector('textarea').value;
+                data.prioridad = 'Media';
+            } else {
+                data.ubicacion_placa = form.querySelector('input').value.toUpperCase();
+                data.prioridad = document.getElementById('driver-priority').value;
+                data.descripcion = form.querySelector('textarea').value;
+            }
+
+            const { error } = await supabaseClient.from('reportes').insert([data]);
+            if(error) alert('Error: ' + error.message);
+            else {
+                alert(`✅ REPORTE CREADO\n\nCÓDIGO: ${code}\nGuárdelo para seguimiento.`);
+                form.reset();
+                showPublicSection('');
+            }
+        }
+
+        async function searchCase() {
+            const code = document.getElementById('search-code').value.toUpperCase();
+            const resDiv = document.getElementById('search-result');
+            const { data, error } = await supabaseClient.from('reportes').select('*').eq('codigo', code).single();
+
+            if(error || !data) {
+                resDiv.innerHTML = `<p class="text-red-500 font-bold bg-red-100 p-3 rounded">Caso ${code} no encontrado.</p>`;
+            } else {
+                let color = data.estado === 'Abierto' ? 'red' : (data.estado === 'En Proceso' ? 'orange' : 'green');
+                resDiv.innerHTML = `
+                    <div class="bg-white border-l-4 border-${color}-500 p-4 shadow rounded">
+                        <div class="flex justify-between">
+                            <h4 class="font-bold text-lg">${data.tipo_reporte} | ${data.ubicacion_placa}</h4>
+                            <span class="px-2 py-1 rounded text-white bg-${color}-500 text-xs font-bold">${data.estado}</span>
+                        </div>
+                        <p class="text-gray-600 mt-2 italic">"${data.descripcion}"</p>
+                        ${data.compromisos ? `<div class="mt-3 bg-gray-100 p-3 rounded text-sm border-t"><strong>Respuesta COPASST:</strong> ${data.compromisos}</div>` : ''}
+                    </div>`;
+            }
+            resDiv.classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 5. CAPACITACIONES (VISTA Y ADMIN)
+        // ==========================================
+        async function loadTrainings() {
+            const { data } = await supabaseClient.from('capacitaciones').select('*');
+            if(!data) return;
+            const grid = document.getElementById('training-grid');
+            grid.innerHTML = data.map(item => `
+                <div class="bg-white rounded shadow hover:shadow-xl transition cursor-pointer overflow-hidden group border"
+                     onclick="openTrainingModal(${item.id}, '${item.url_recurso}')">
+                    <div class="h-40 bg-gray-200 bg-cover bg-center flex items-center justify-center text-gray-400" 
+                         style="background-image: url('${item.url_thumbnail || ''}')">
+                         ${!item.url_thumbnail ? '<i class="ph ph-image text-4xl"></i>' : ''}
+                    </div>
+                    <div class="p-4">
+                        <span class="text-xs font-bold uppercase px-2 py-1 rounded ${item.tipo === 'video' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}">${item.tipo}</span>
+                        <h4 class="font-bold text-lg mt-2 group-hover:text-blue-600">${item.titulo}</h4>
+                        <p class="text-sm text-gray-500">${item.descripcion}</p>
+                    </div>
+                </div>`).join('');
+        }
+
+        function openTrainingModal(id, url) {
+            document.getElementById('training-target-id').value = id;
+            document.getElementById('training-target-url').value = url;
+            document.getElementById('modal-training-auth').classList.remove('hidden');
+        }
+
+        async function saveTrainingLog() {
+            const name = document.getElementById('trainee-name').value;
+            const idDoc = document.getElementById('trainee-id').value;
+            if(!name || !idDoc) return alert("Datos obligatorios");
+            
+            await supabaseClient.from('registro_vistas').insert([{
+                id_capacitacion: document.getElementById('training-target-id').value,
+                nombre_empleado: name, cedula: idDoc
+            }]);
+            
+            document.getElementById('modal-training-auth').classList.add('hidden');
+            window.open(document.getElementById('training-target-url').value, '_blank');
+        }
+
+        // --- Gestión Admin de Videos ---
+        function openTrainingManager() {
+            document.getElementById('modal-upload-training').classList.remove('hidden');
+        }
+
+        async function saveTraining() {
+            const title = document.getElementById('new-train-title').value;
+            const type = document.getElementById('new-train-type').value;
+            const url = document.getElementById('new-train-url').value;
+            
+            if(!title || !url) return alert("Título y URL obligatorios");
+
+            await supabaseClient.from('capacitaciones').insert([{
+                titulo: title,
+                descripcion: document.getElementById('new-train-desc').value,
+                tipo: type,
+                url_recurso: url,
+                url_thumbnail: document.getElementById('new-train-img').value
+            }]);
+
+            alert("Material publicado correctamente");
+            document.getElementById('modal-upload-training').classList.add('hidden');
+            loadTrainings(); // Recargar vista pública
+        }
+
+        // ==========================================
+        // 6. GESTIÓN DE INSPECCIONES (LÓGICA 5S)
+        // ==========================================
+        function openInspectionModal() {
+            document.getElementById('modal-inspection').classList.remove('hidden');
+            updateChecklistUI();
+        }
+
+        function updateChecklistUI() {
+            const type = document.getElementById('insp-tipo').value;
+            const list = type === 'locativa' ? checklistLocativa : checklist5S;
+            const container = document.getElementById('checklist-container');
+            
+            container.innerHTML = list.map((item, i) => `
+                <div class="flex items-center border-b last:border-0 p-2 hover:bg-white transition bg-white mb-1 rounded shadow-sm checklist-row">
+                    <div class="w-1/2 pr-2 text-sm font-medium text-gray-700">${item}</div>
+                    <div class="w-1/6 text-center">
+                        <select class="w-full border rounded p-1 text-sm check-status bg-gray-50 focus:bg-white">
+                            <option value="Cumple">Cumple</option>
+                            <option value="No Cumple" class="font-bold text-red-600">No Cumple</option>
+                            <option value="N/A">N/A</option>
+                        </select>
+                    </div>
+                    <div class="w-1/3 pl-2">
+                        <input type="text" class="w-full border-b border-gray-300 focus:border-indigo-500 outline-none text-sm p-1 check-obs" placeholder="Observación...">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function submitInspection() {
+            const sede = document.getElementById('insp-sede').value;
+            const responsable = document.getElementById('insp-responsable').value;
+            
+            if(!sede || !responsable) return alert("Falta Sede o Responsable");
+
+            // Recolectar datos
+            let hallazgos = [];
+            document.querySelectorAll('.checklist-row').forEach(row => {
+                const item = row.querySelector('.text-gray-700').innerText;
+                const status = row.querySelector('.check-status').value;
+                const obs = row.querySelector('.check-obs').value;
+                hallazgos.push({ item, status, obs });
+            });
+
+            const code = generateCode('INS');
+
+            const { error } = await supabaseClient.from('inspecciones').insert([{
+                codigo: code,
+                sede: sede,
+                tipo: document.getElementById('insp-tipo').value,
+                responsable: responsable,
+                hallazgos: hallazgos
+            }]);
+
+            if(error) alert('Error: ' + error.message);
+            else {
+                alert('Inspección Guardada Correctamente');
+                document.getElementById('modal-inspection').classList.add('hidden');
+                loadAdminData();
+            }
+        }
+
+        // ==========================================
+        // 7. ADMIN - DASHBOARD Y VISUALIZADOR
+        // ==========================================
+        function checkLogin() { document.getElementById('modal-login').classList.remove('hidden'); }
+        
+        async function performLogin() {
+            const email = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+            if(error) alert("Credenciales inválidas");
+            else {
+                document.getElementById('modal-login').classList.add('hidden');
+                navTo('admin');
+                loadAdminData();
+            }
+        }
+
+        function logout() { navTo('public'); }
+
+        async function loadAdminData() {
+            // Cargar Reportes
+            const { data: reports } = await supabaseClient.from('reportes').select('*').order('id', {ascending:false});
+            renderReportTable(reports || []);
+            
+            // Cargar Inspecciones
+            const { data: insps } = await supabaseClient.from('inspecciones').select('*').order('id', {ascending:false});
+            renderInspectionTable(insps || []);
+            updateDashboard(reports || [], insps || []);
+        }
+
+        function renderReportTable(data) {
+            document.getElementById('admin-table-body').innerHTML = data.map(r => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 text-corp font-bold">${r.codigo}</td>
+                    <td class="p-3">
+                        <div class="text-xs font-bold">${r.ubicacion_placa}</div>
+                        <div class="text-xs text-gray-500 truncate w-40">${r.descripcion}</div>
+                    </td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs ${r.estado==='Cerrado'?'bg-green-100 text-green-800':'bg-yellow-100 text-yellow-800'}">${r.estado}</span></td>
+                    <td class="p-3"><button onclick="manageCase('${r.codigo}')" class="text-corp hover:underline text-xs font-bold">Gestionar</button></td>
+                </tr>
+            `).join('');
+            window.tempReports = data; 
+        }
+
+        function renderInspectionTable(data) {
+            document.getElementById('inspections-table-body').innerHTML = data.map(i => `
+                <tr class="border-b hover:bg-indigo-50">
+                    <td class="p-3 font-bold text-corp">${i.codigo}</td>
+                    <td class="p-3">
+                        <div class="font-bold text-xs">${i.sede}</div>
+                        <div class="text-xs text-gray-500 uppercase">${i.tipo === '5s' ? 'Orden y Aseo (5S)' : 'Locativa'}</div>
+                    </td>
+                    <td class="p-3 text-xs">${new Date(i.fecha).toLocaleDateString()}</td>
+                    <td class="p-3">
+                        <button onclick='viewInspection(${JSON.stringify(i).replace(/'/g, "")})' class="bg-white border border-[#06263b] text-corp px-2 py-1 rounded text-xs hover:bg-indigo-50 font-bold">
+                            <i class="ph ph-eye"></i> Ver / PDF
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- Visualizador PDF ---
+        function viewInspection(i) {
+            document.getElementById('view-code').innerText = i.codigo;
+            document.getElementById('view-date').innerText = new Date(i.fecha).toLocaleDateString();
+            document.getElementById('view-sede').innerText = i.sede;
+            document.getElementById('view-type').innerText = i.tipo === '5s' ? 'Orden y Aseo (5S)' : 'Locativa';
+            document.getElementById('view-resp').innerText = i.responsable;
+
+            const tbody = document.getElementById('view-findings-body');
+            tbody.innerHTML = i.hallazgos.map(h => `
+                <tr class="border-b">
+                    <td class="p-2 border-r">${h.item}</td>
+                    <td class="p-2 text-center border-r font-bold ${h.status === 'No Cumple' ? 'text-red-600 bg-red-50' : 'text-green-600'}">${h.status}</td>
+                    <td class="p-2 text-gray-600 italic">${h.obs || '-'}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('modal-view-insp').classList.remove('hidden');
+        }
+
+        function downloadInspectionPDF() {
+            const element = document.getElementById('printable-area');
+            const code = document.getElementById('view-code').innerText;
+            const opt = {
+                margin: 0.5,
+                filename: `Inspeccion_${code}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // --- Lógica de Gestión de Casos ---
+        function manageCase(code) {
+            const r = window.tempReports.find(x => x.codigo === code);
+            document.getElementById('manage-code').innerText = r.codigo;
+            document.getElementById('manage-desc').innerText = r.descripcion;
+            document.getElementById('manage-commitments').value = r.compromisos || '';
+            document.getElementById('manage-status').value = r.estado;
+            
+            const closed = r.estado === 'Cerrado';
+            document.getElementById('manage-status').disabled = closed;
+            document.getElementById('manage-commitments').disabled = closed;
+            
+            window.currentManageId = r.id;
+            document.getElementById('modal-manage').classList.remove('hidden');
+        }
+
+        async function saveCaseManagement() {
+            const update = {
+                estado: document.getElementById('manage-status').value,
+                compromisos: document.getElementById('manage-commitments').value
+            };
+            if(update.estado === 'Cerrado') update.fecha_cierre = new Date();
+            
+            await supabaseClient.from('reportes').update(update).eq('id', window.currentManageId);
+            document.getElementById('modal-manage').classList.add('hidden');
+            loadAdminData();
+        }
+
+        function updateDashboard(reps, insps) {
+            document.getElementById('total-inspections').innerText = insps.length;
+            const ctx1 = document.getElementById('chartType');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Locativo', 'Vehicular'],
+                    datasets: [{ data: [
+                        reps.filter(r=>r.tipo_reporte==='locativa').length,
+                        reps.filter(r=>r.tipo_reporte==='conductor').length
+                    ], backgroundColor: ['#EAB308', '#F97316'] }]
+                }
+            });
+            const ctx2 = document.getElementById('chartStatus');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Abierto', 'En Proceso', 'Cerrado'],
+                    datasets: [{ 
+                        label: 'Casos',
+                        data: [
+                            reps.filter(r=>r.estado==='Abierto').length,
+                            reps.filter(r=>r.estado==='En Proceso').length,
+                            reps.filter(r=>r.estado==='Cerrado').length
+                        ], 
+                        backgroundColor: ['#EF4444', '#F59E0B', '#10B981'] 
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
