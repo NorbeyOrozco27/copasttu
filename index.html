@@ -34,8 +34,7 @@
     <nav class="bg-corp text-white shadow-lg sticky top-0 z-40 border-b-4 border-yellow-500">
         <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- AQUÍ VA TU LOGO -->
-                <!-- Reemplaza el src con la URL de tu logo -->
+                <!-- LOGO -->
                 <img src="https://ogjrlqylxnmsjxynnxop.supabase.co/storage/v1/object/public/multimedia/WhatsApp%20Image%202025-10-17%20at%209.06.45%20AM.jpeg" alt="Logo Empresa" class="h-12 bg-white rounded p-1">
                 
                 <div class="hidden md:block">
@@ -60,8 +59,6 @@
                 <p class="text-gray-600">Conoce nuestros pilares de prevención</p>
             </div>
             
-            <!-- GRID DE 4 VIDEOS -->
-            <!-- Nota: Sube tus videos y pon la ruta correcta en src="" -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-black rounded-lg overflow-hidden shadow-lg border-2 border-[#06263b]">
                     <video controls class="w-full h-40 object-cover">
@@ -190,13 +187,22 @@
     <main id="view-admin" class="container mx-auto px-4 py-6 hidden flex-grow fade-in bg-gray-100">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-corp">Gestión COPASST</h2>
+            
             <div class="flex gap-2">
-                <button onclick="openTrainingManager()" class="bg-teal-600 text-white px-4 py-2 rounded shadow hover:bg-teal-700 text-sm flex items-center gap-2">
-                    <i class="ph ph-upload"></i> Subir Capacitación
+                <!-- Botones de Acción Admin -->
+                <button onclick="openTrainingManager()" class="bg-teal-600 text-white px-3 py-2 rounded shadow hover:bg-teal-700 text-sm flex items-center gap-2">
+                    <i class="ph ph-upload"></i> Subir Cap.
                 </button>
-                <button onclick="openInspectionModal()" class="bg-corp text-white px-4 py-2 rounded shadow hover-corp text-sm flex items-center gap-2">
-                    <i class="ph ph-clipboard-text"></i> Nueva Inspección
+                
+                <!-- NUEVO BOTÓN: BORRAR VIDEOS -->
+                <button onclick="openTrainingList()" class="bg-orange-600 text-white px-3 py-2 rounded shadow hover:bg-orange-700 text-sm flex items-center gap-2">
+                    <i class="ph ph-trash"></i> Borrar Videos
                 </button>
+
+                <button onclick="openInspectionModal()" class="bg-corp text-white px-3 py-2 rounded shadow hover-corp text-sm flex items-center gap-2">
+                    <i class="ph ph-clipboard-text"></i> Nueva Insp.
+                </button>
+                
                 <button onclick="logout()" class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm">Salir</button>
             </div>
         </div>
@@ -257,6 +263,8 @@
         </div>
     </main>
 
+    <!-- ================= MODALES ================= -->
+
     <!-- MODAL LOGIN -->
     <div id="modal-login" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-lg w-80 shadow-2xl border-t-4 border-corp">
@@ -268,7 +276,7 @@
         </div>
     </div>
 
-    <!-- MODAL REGISTRO DE VISTA (CAPACITACIONES) -->
+    <!-- MODAL REGISTRO DE VISTA (CAPACITACIONES PÚBLICAS) -->
     <div id="modal-training-auth" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded w-96 shadow-2xl">
             <h3 class="font-bold text-lg mb-2 text-center text-corp">Registro de Asistencia</h3>
@@ -282,7 +290,7 @@
         </div>
     </div>
 
-    <!-- MODAL GESTIÓN CASO -->
+    <!-- MODAL GESTIÓN CASO (ADMIN) -->
     <div id="modal-manage" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded w-full max-w-lg shadow-2xl">
             <h3 class="font-bold text-lg mb-4 text-corp border-b pb-2">Gestionar Caso: <span id="manage-code"></span></h3>
@@ -332,14 +340,12 @@
                 </div>
             </div>
 
-            <!-- Header de Tabla -->
             <div class="flex bg-corp text-white p-2 font-bold text-sm rounded-t">
                 <div class="w-1/2">Aspecto a Evaluar</div>
                 <div class="w-1/6 text-center">Estado</div>
                 <div class="w-1/3">Hallazgos / Observaciones</div>
             </div>
 
-            <!-- Scrollable Body -->
             <div class="overflow-y-auto flex-grow border border-gray-200 rounded-b p-2 bg-gray-50" id="checklist-container">
                 <!-- Se llena dinámicamente -->
             </div>
@@ -350,16 +356,14 @@
         </div>
     </div>
 
-    <!-- MODAL VER INSPECCIÓN (PARA PDF) -->
+    <!-- MODAL VER INSPECCIÓN (PDF) -->
     <div id="modal-view-insp" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
         <div class="bg-white w-full max-w-4xl h-[90vh] overflow-y-auto m-4 p-8 relative shadow-2xl">
             <button onclick="document.getElementById('modal-view-insp').classList.add('hidden')" class="absolute top-4 right-4 text-3xl text-red-500 font-bold">&times;</button>
             
-            <!-- Contenido Imprimible -->
             <div id="printable-area" class="pdf-container">
                 <div class="flex justify-between items-center border-b-4 border-[#06263b] pb-4 mb-4">
                     <div class="flex items-center gap-3">
-                        <!-- Logo en reporte -->
                         <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-center text-gray-500">LOGO</div>
                         <div>
                             <h1 class="text-2xl font-bold text-corp">Reporte de Inspección</h1>
@@ -420,13 +424,45 @@
         </div>
     </div>
 
+    <!-- NUEVO MODAL: ADMINISTRAR CAPACITACIONES (BORRAR) -->
+    <div id="modal-manage-trainings" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-lg text-corp">Administrar Biblioteca de Capacitaciones</h3>
+                <button onclick="document.getElementById('modal-manage-trainings').classList.add('hidden')" class="text-2xl text-gray-400 hover:text-red-500">&times;</button>
+            </div>
+            
+            <p class="text-sm text-gray-500 mb-4">Aquí puedes eliminar material que ya no debe estar visible al público.</p>
+
+            <!-- Lista scrolleable -->
+            <div class="overflow-y-auto flex-grow border rounded bg-gray-50 p-2">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2">Título</th>
+                            <th class="px-4 py-2">Tipo</th>
+                            <th class="px-4 py-2 text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-training-list-body">
+                        <!-- Se llena con JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 pt-2 border-t text-right">
+                <button onclick="document.getElementById('modal-manage-trainings').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 font-bold">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT -->
     <script>
         // ==========================================
-        // 1. CREDENCIALES (PON LAS TUYAS AQUÍ)
+        // 1. CREDENCIALES
         // ==========================================
-        const SUPABASE_URL = 'https://ogjrlqylxnmsjxynnxop.supabase.co'; // <--- TUS DATOS AQUÍ
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanJscXlseG5tc2p4eW5ueG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzI1MDEsImV4cCI6MjA3OTU0ODUwMX0.5aV8eED_fau9KJIsumYyEliSn5_c5W8mSvvIOjXNve0';               // <--- TUS DATOS AQUÍ
+        const SUPABASE_URL = 'https://ogjrlqylxnmsjxynnxop.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9nanJscXlseG5tc2p4eW5ueG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5NzI1MDEsImV4cCI6MjA3OTU0ODUwMX0.5aV8eED_fau9KJIsumYyEliSn5_c5W8mSvvIOjXNve0';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // ==========================================
@@ -446,7 +482,6 @@
             "Botiquín dotado", "Estado del mobiliario (Sillas/Mesas)", "Ventilación del área"
         ];
 
-        // Metodología 5S
         const checklist5S = [
             "1. SEIRI (Clasificar): ¿Solo hay elementos necesarios en el área?",
             "1. SEIRI: ¿Se han eliminado objetos obsoletos o dañados?",
@@ -470,7 +505,7 @@
                 sel.innerHTML = '<option value="">Seleccione Sede...</option>' + 
                     sedesList.map(s => `<option value="${s}">${s}</option>`).join('');
             });
-            updateChecklistUI(); // Cargar checklist inicial
+            updateChecklistUI(); 
             loadTrainings();
         };
 
@@ -588,7 +623,7 @@
             window.open(document.getElementById('training-target-url').value, '_blank');
         }
 
-        // --- Gestión Admin de Videos ---
+        // --- Gestión Admin de Videos (CREAR) ---
         function openTrainingManager() {
             document.getElementById('modal-upload-training').classList.remove('hidden');
         }
@@ -600,7 +635,7 @@
             
             if(!title || !url) return alert("Título y URL obligatorios");
 
-            await supabaseClient.from('capacitaciones').insert([{
+            const { error } = await supabaseClient.from('capacitaciones').insert([{
                 titulo: title,
                 descripcion: document.getElementById('new-train-desc').value,
                 tipo: type,
@@ -608,10 +643,78 @@
                 url_thumbnail: document.getElementById('new-train-img').value
             }]);
 
-            alert("Material publicado correctamente");
-            document.getElementById('modal-upload-training').classList.add('hidden');
-            loadTrainings(); // Recargar vista pública
+            if(error) alert("Error: " + error.message);
+            else {
+                alert("Material publicado correctamente");
+                document.getElementById('modal-upload-training').classList.add('hidden');
+                loadTrainings(); // Recargar vista pública
+            }
         }
+
+        // --- GESTIÓN DE ELIMINACIÓN DE VIDEOS (NUEVO) ---
+
+        async function openTrainingList() {
+            // 1. Mostrar modal
+            document.getElementById('modal-manage-trainings').classList.remove('hidden');
+            
+            // 2. Cargar datos actualizados
+            const { data, error } = await supabaseClient.from('capacitaciones').select('*').order('id', { ascending: false });
+            
+            if (error) {
+                alert("Error cargando lista: " + error.message);
+                return;
+            }
+
+            const tbody = document.getElementById('admin-training-list-body');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No hay capacitaciones publicadas.</td></tr>';
+                return;
+            }
+
+            // 3. Renderizar tabla
+            tbody.innerHTML = data.map(item => `
+                <tr class="bg-white border-b hover:bg-red-50 transition">
+                    <td class="px-4 py-3 font-medium text-gray-900">
+                        ${item.titulo}
+                        <div class="text-xs text-gray-400 truncate w-64">${item.url_recurso}</div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 rounded text-xs font-bold ${item.tipo === 'video' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                            ${item.tipo}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="deleteTraining(${item.id})" class="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded shadow text-xs font-bold flex items-center justify-center gap-1 mx-auto">
+                            <i class="ph ph-trash"></i> Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteTraining(id) {
+            // 1. Confirmación
+            if (!confirm("¿Estás seguro de que deseas ELIMINAR esta capacitación de la vista pública? Esta acción no se puede deshacer.")) {
+                return;
+            }
+
+            // 2. Petición a Supabase (Requiere RLS configurado para DELETE)
+            const { error } = await supabaseClient
+                .from('capacitaciones')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Error al eliminar: " + error.message);
+            } else {
+                alert("Capacitación eliminada correctamente.");
+                // 3. Recargar las listas
+                openTrainingList(); 
+                loadTrainings(); 
+            }
+        }
+
 
         // ==========================================
         // 6. GESTIÓN DE INSPECCIONES (LÓGICA 5S)
@@ -693,16 +796,30 @@
             }
         }
 
-        function logout() { navTo('public'); }
+        function logout() { 
+            supabaseClient.auth.signOut();
+            navTo('public'); 
+        }
 
         async function loadAdminData() {
+            // Verificar sesión activa
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                alert("Sesión no válida");
+                navTo('public');
+                return;
+            }
+
             // Cargar Reportes
-            const { data: reports } = await supabaseClient.from('reportes').select('*').order('id', {ascending:false});
+            const { data: reports, error: errRep } = await supabaseClient.from('reportes').select('*').order('id', {ascending:false});
+            if(errRep) console.error(errRep);
             renderReportTable(reports || []);
             
             // Cargar Inspecciones
-            const { data: insps } = await supabaseClient.from('inspecciones').select('*').order('id', {ascending:false});
+            const { data: insps, error: errInsp } = await supabaseClient.from('inspecciones').select('*').order('id', {ascending:false});
+            if(errInsp) console.error(errInsp);
             renderInspectionTable(insps || []);
+            
             updateDashboard(reports || [], insps || []);
         }
 
