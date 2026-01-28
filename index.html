@@ -194,9 +194,9 @@
                     <i class="ph ph-upload"></i> Subir Cap.
                 </button>
                 
-                <!-- NUEVO BOTÓN: BORRAR VIDEOS -->
+                <!-- BOTÓN: OCULTAR VIDEOS -->
                 <button onclick="openTrainingList()" class="bg-orange-600 text-white px-3 py-2 rounded shadow hover:bg-orange-700 text-sm flex items-center gap-2">
-                    <i class="ph ph-trash"></i> Borrar Videos
+                    <i class="ph ph-eye-slash"></i> Ocultar Videos
                 </button>
 
                 <button onclick="openInspectionModal()" class="bg-corp text-white px-3 py-2 rounded shadow hover-corp text-sm flex items-center gap-2">
@@ -424,7 +424,7 @@
         </div>
     </div>
 
-    <!-- NUEVO MODAL: ADMINISTRAR CAPACITACIONES (BORRAR) -->
+    <!-- MODAL: ADMINISTRAR CAPACITACIONES (OCULTAR) -->
     <div id="modal-manage-trainings" class="fixed inset-0 bg-black bg-opacity-60 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg w-full max-w-2xl shadow-xl h-[80vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -432,7 +432,7 @@
                 <button onclick="document.getElementById('modal-manage-trainings').classList.add('hidden')" class="text-2xl text-gray-400 hover:text-red-500">&times;</button>
             </div>
             
-            <p class="text-sm text-gray-500 mb-4">Aquí puedes eliminar material que ya no debe estar visible al público.</p>
+            <p class="text-sm text-gray-500 mb-4">Aquí puedes ocultar el material que ya no debe estar visible al público (sin borrar la asistencia).</p>
 
             <!-- Lista scrolleable -->
             <div class="overflow-y-auto flex-grow border rounded bg-gray-50 p-2">
@@ -584,8 +584,14 @@
         // ==========================================
         // 5. CAPACITACIONES (VISTA Y ADMIN)
         // ==========================================
+        
+        // Carga los videos públicos (solo los ACTIVO = TRUE)
         async function loadTrainings() {
-            const { data } = await supabaseClient.from('capacitaciones').select('*');
+            const { data } = await supabaseClient
+                .from('capacitaciones')
+                .select('*')
+                .eq('activo', true); // <--- SOLO VISIBLES
+
             if(!data) return;
             const grid = document.getElementById('training-grid');
             grid.innerHTML = data.map(item => `
@@ -640,7 +646,8 @@
                 descripcion: document.getElementById('new-train-desc').value,
                 tipo: type,
                 url_recurso: url,
-                url_thumbnail: document.getElementById('new-train-img').value
+                url_thumbnail: document.getElementById('new-train-img').value,
+                activo: true // Por defecto visible
             }]);
 
             if(error) alert("Error: " + error.message);
@@ -651,14 +658,18 @@
             }
         }
 
-        // --- GESTIÓN DE ELIMINACIÓN DE VIDEOS (NUEVO) ---
+        // --- GESTIÓN DE OCULTAR VIDEOS (SOFT DELETE) ---
 
         async function openTrainingList() {
             // 1. Mostrar modal
             document.getElementById('modal-manage-trainings').classList.remove('hidden');
             
-            // 2. Cargar datos actualizados
-            const { data, error } = await supabaseClient.from('capacitaciones').select('*').order('id', { ascending: false });
+            // 2. Cargar solo los activos para poder ocultarlos
+            const { data, error } = await supabaseClient
+                .from('capacitaciones')
+                .select('*')
+                .eq('activo', true) // <--- SOLO ACTIVOS
+                .order('id', { ascending: false });
             
             if (error) {
                 alert("Error cargando lista: " + error.message);
@@ -668,7 +679,7 @@
             const tbody = document.getElementById('admin-training-list-body');
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No hay capacitaciones publicadas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-gray-500">No hay capacitaciones públicas actualmente.</td></tr>';
                 return;
             }
 
@@ -686,7 +697,7 @@
                     </td>
                     <td class="px-4 py-3 text-center">
                         <button onclick="deleteTraining(${item.id})" class="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded shadow text-xs font-bold flex items-center justify-center gap-1 mx-auto">
-                            <i class="ph ph-trash"></i> Eliminar
+                            <i class="ph ph-eye-slash"></i> Ocultar
                         </button>
                     </td>
                 </tr>
@@ -694,21 +705,21 @@
         }
 
         async function deleteTraining(id) {
-            // 1. Confirmación
-            if (!confirm("¿Estás seguro de que deseas ELIMINAR esta capacitación de la vista pública? Esta acción no se puede deshacer.")) {
+            // 1. Confirmación de seguridad
+            if (!confirm("¿Deseas OCULTAR esta capacitación? \n\nNo se borrará la evidencia de asistencia, pero el video dejará de ser visible para los empleados.")) {
                 return;
             }
 
-            // 2. Petición a Supabase (Requiere RLS configurado para DELETE)
+            // 2. ACTUALIZACIÓN (Soft Delete)
             const { error } = await supabaseClient
                 .from('capacitaciones')
-                .delete()
+                .update({ activo: false }) // <--- Apagar interruptor
                 .eq('id', id);
 
             if (error) {
-                alert("Error al eliminar: " + error.message);
+                alert("Error al ocultar: " + error.message);
             } else {
-                alert("Capacitación eliminada correctamente.");
+                alert("Capacitación ocultada correctamente.");
                 // 3. Recargar las listas
                 openTrainingList(); 
                 loadTrainings(); 
